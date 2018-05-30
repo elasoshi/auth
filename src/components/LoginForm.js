@@ -13,6 +13,7 @@ state = { text: '', password: '', error: '', loading: false };
       .then(this.onSuccess.bind(this))
       .catch(() => {
         firebase.auth().createUserWithEmailAndPassword(text, password)
+          .then(this.onSuccess.bind(this))
           .catch(this.onFail.bind(this));
       });
   }
