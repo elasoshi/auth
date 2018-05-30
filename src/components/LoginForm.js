@@ -1,9 +1,46 @@
 import React, { Component } from 'react';
-//import { View, Text } from 'react-native';
-import { Card, CardSection, Button, Input } from './common';
+import { Text } from 'react-native';
+import firebase from 'firebase';
+import { Card, CardSection, Button, Input, Spinner } from './common';
 
 class LoginForm extends Component {
-state = { text: '' };
+state = { text: '', password: '', error: '', loading: false };
+
+  onButtonPress() {
+    const { text, password } = this.state;
+    this.setState({ error: '', loading: true });
+    firebase.auth().signInWithEmailAndPassword(text, password)
+      .then(this.onSuccess.bind(this))
+      .catch(() => {
+        firebase.auth().createUserWithEmailAndPassword(text, password)
+          .catch(this.onFail.bind(this));
+      });
+  }
+
+  onSuccess() {
+    this.setState({
+      error: '',
+      text: '',
+      password: '',
+      loading: false
+    });
+  }
+
+  onFail() {
+    this.setState({ error: 'Authentication Failed', loading: false });
+  }
+
+  renderButton() {
+    if (this.state.loading) {
+      return <Spinner size='small' />;
+      }
+
+      return (
+        <Button onPress={this.onButtonPress.bind(this)}>
+          Log In
+        </Button>
+      );
+  }
 
   render() {
     return (
@@ -18,12 +55,22 @@ state = { text: '' };
           />
         </CardSection>
 
-      <CardSection />
+      <CardSection>
+        <Input
+          secureTextEntry
+          label="Password"
+          placeholder="password"
+          value={this.state.password}
+          onChangeText={password => this.setState({ password })}
+        />
+      </CardSection>
+
+      <Text style={styles.errorTextStyle}>
+        {this.state.error}
+      </Text>
 
       <CardSection>
-        <Button>
-          Log In
-        </Button>
+        {this.renderButton()}
       </CardSection>
 
     </Card>
@@ -31,5 +78,13 @@ state = { text: '' };
     );
   }
 }
+
+const styles = {
+  errorTextStyle: {
+    fontSize: 10,
+    alignSelf: 'center',
+    color: 'red'
+  }
+};
 
 export default LoginForm;
